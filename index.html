@@ -594,8 +594,18 @@ async function loadCfgFromFirebase() {
 }
 
 // ─── AUTH ─────────────────────────────────────────────────────────────
+const ALLOWED_EMAIL = 'henriquejrogovschi@gmail.com';
+
 onAuthStateChanged(auth, async user => {
   if (user) {
+    if (user.email !== ALLOWED_EMAIL) {
+      await signOut(auth);
+      el('loadingScreen').classList.add('hidden');
+      el('loginScreen').classList.remove('hidden');
+      el('loginError').textContent = 'Acesso restrito. Este app é privado.';
+      el('loginError').classList.remove('hidden');
+      return;
+    }
     currentUser = user;
     el('loadingTxt').textContent = 'Carregando seus treinos...';
     await loadCfgFromFirebase();
