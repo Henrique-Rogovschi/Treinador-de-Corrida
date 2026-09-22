@@ -447,20 +447,15 @@ import { getAuth, GoogleAuthProvider, signInWithPopup, signOut, onAuthStateChang
 import { getFirestore, collection, doc, setDoc, getDocs, deleteDoc, query, orderBy, serverTimestamp }
   from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js';
 
-// ══════════════════════════════════════════════════════════════════════
-// 🔥 CONFIGURAÇÃO DO FIREBASE
-// Substitua pelos valores do seu projeto em console.firebase.google.com
-// ══════════════════════════════════════════════════════════════════════
+// CONFIGURACAO DO FIREBASE
 const firebaseConfig = {
-  apiKey:            "AIzaSyCFSkb-E9P7MFqT8FENmANZ4dM0ryBQ-8w
-",
+  apiKey:            "AIzaSyCFSkb-E9P7MFqT8FENmANZ4dM0ryBQ-8w",
   authDomain:        "treinador-de-corrida-d44c0.firebaseapp.com",
   projectId:         "treinador-de-corrida-d44c0",
-  storageBucket:     treinador-de-corrida-d44c0.firebasestorage.app",
+  storageBucket:     "treinador-de-corrida-d44c0.firebasestorage.app",
   messagingSenderId: "396794580472",
   appId:             "1:396794580472:web:d139e63b64d2206539da0d",
 };
-// ══════════════════════════════════════════════════════════════════════
 
 const app  = initializeApp(firebaseConfig);
 const auth = getAuth(app);
@@ -595,8 +590,18 @@ async function loadCfgFromFirebase() {
 }
 
 // ─── AUTH ─────────────────────────────────────────────────────────────
+const ALLOWED_EMAIL = 'henriquejrogovschi@gmail.com';
+
 onAuthStateChanged(auth, async user => {
   if (user) {
+    if (user.email !== ALLOWED_EMAIL) {
+      await signOut(auth);
+      el('loadingScreen').classList.add('hidden');
+      el('loginScreen').classList.remove('hidden');
+      el('loginError').textContent = 'Acesso restrito. Este app é privado.';
+      el('loginError').classList.remove('hidden');
+      return;
+    }
     currentUser = user;
     el('loadingTxt').textContent = 'Carregando seus treinos...';
     await loadCfgFromFirebase();
