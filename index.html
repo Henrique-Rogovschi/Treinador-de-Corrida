@@ -573,6 +573,15 @@ async function saveToFirebase(treino) {
   }
 }
 
+// ─── FIREBASE: APAGAR TREINO ─────────────────────────────────────────
+async function deleteFromFirebase(id) {
+  if (!currentUser) return;
+  try {
+    await deleteDoc(doc(db, 'users', currentUser.uid, 'treinos', String(id)));
+    setSyncStatus('ok', 'Treino apagado');
+  } catch(e) { setSyncStatus('err', 'Erro ao apagar'); console.error(e); }
+}
+
 // ─── FIREBASE: SALVAR CONFIG ──────────────────────────────────────────
 async function saveCfgToFirebase() {
   if (!currentUser) return;
@@ -773,6 +782,15 @@ Contexto: semana ${wi+1}/12, sessão ${day}=${day==='seg'?ps.seg.desc:day==='qua
     this.closeSettings(); this.render();
   },
 
+  async deleteTreino(id, event) {
+    event.stopPropagation();
+    if (!confirm('Apagar este treino?')) return;
+    DB = DB.filter(t => String(t.id) !== String(id));
+    await deleteFromFirebase(id);
+    renderHistory();
+    A.render();
+  },
+
   filter(f,btn) {
     document.querySelectorAll('.fb').forEach(b=>b.classList.remove('on'));
     btn.classList.add('on'); renderHistory(f);
@@ -941,6 +959,7 @@ function renderHistory(filter='all'){
           ${chips.length?`<div class="hd-chips">${chips.map(c=>`<span class="hd-chip">${c}</span>`).join('')}</div>`:''}
           ${t.feedback?`<div class="hd-fb">${t.feedback}</div>`:''}
           ${t.notes?`<div class="hd-fb" style="margin-top:5px;color:var(--steel2)">${t.notes}</div>`:''}
+          <button onclick="A.deleteTreino('${t.id}',event)" style="margin-top:10px;width:100%;border:1px solid var(--ember);background:transparent;color:var(--ember);padding:9px;border-radius:10px;font-size:13px;cursor:pointer;">🗑 Apagar este treino</button>
         </div>
       </div>`;
     }).join('');
